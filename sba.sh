@@ -6,7 +6,7 @@ VERSION=beta1
 # 各变量默认值
 GH_PROXY='https://ghproxy.com/'
 UUID_DEFAULT='ffffffff-ffff-ffff-ffff-ffffffffffff'
-WS_PATH_DEFAULT='sba'
+WS_PATH_DEFAULT='wssing'
 WORK_DIR='/etc/sba'
 TEMP_DIR='/tmp/sba'
 CDN_DOMAIN=("www.who.int" "cdn.anycast.eu.org" "443.cf.bestl.de" "cn.azhz.eu.org" "cfip.gay")
@@ -42,7 +42,7 @@ C[11]="请输入 Argo Token 或者 Json ( 用户通过以下网站轻松获取 j
 E[12]="Please input Sing-box UUID \(Default is \$UUID_DEFAULT\):"
 C[12]="请输入 Sing-box UUID \(默认为 \$UUID_DEFAULT\):"
 E[13]="Please input Sing-box WS Path \(Default is \$WS_PATH_DEFAULT\):"
-C[13]="请输入 Sing-box WS 路径 \(默认为 \wssing\):"
+C[13]="请输入 Sing-box WS 路径 \(默认为 \$WS_PATH_DEFAULT\):"
 E[14]="Sing-box WS Path only allow uppercase and lowercase letters and numeric characters, please re-enter \(\${a} times remaining\):"
 C[14]="Sing-box WS 路径只允许英文大小写及数字字符，请重新输入 \(剩余\${a}次\):"
 E[15]="sba script has not been installed yet."
