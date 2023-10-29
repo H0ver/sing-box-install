@@ -568,16 +568,16 @@ EOF
         },
         "rules":[
             {
-                "geoip": [
-                    "cn"
-                ],
-                "outbound": "block"
-            },
-            {
                 "geosite":[
                     "openai"
                 ],
                 "outbound":"warp-IPv6-out"
+            },
+            {
+                "geoip": [
+                    "cn"
+                ],
+                "outbound": "block"
             }
         ]
     }
