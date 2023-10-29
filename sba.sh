@@ -42,7 +42,7 @@ C[11]="请输入 Argo Token 或者 Json ( 用户通过以下网站轻松获取 j
 E[12]="Please input Sing-box UUID \(Default is \$UUID_DEFAULT\):"
 C[12]="请输入 Sing-box UUID \(默认为 \$UUID_DEFAULT\):"
 E[13]="Please input Sing-box WS Path \(Default is \$WS_PATH_DEFAULT\):"
-C[13]="请输入 Sing-box WS 路径 \(默认为 \$WS_PATH_DEFAULT\):"
+C[13]="请输入 Sing-box WS 路径 \(默认为 \wssing\):"
 E[14]="Sing-box WS Path only allow uppercase and lowercase letters and numeric characters, please re-enter \(\${a} times remaining\):"
 C[14]="Sing-box WS 路径只允许英文大小写及数字字符，请重新输入 \(剩余\${a}次\):"
 E[15]="sba script has not been installed yet."
@@ -391,13 +391,13 @@ protocol: http2
 ingress:
   - hostname: ${ARGO_DOMAIN}
     service: http://localhost:3011
-    path: /${WS_PATH}-vl/*
+    path: /vlwssing/*
   - hostname: ${ARGO_DOMAIN}
     service: http://localhost:3012
-    path: /${WS_PATH}-vm/*
+    path: /vmwssing/*
   - hostname: ${ARGO_DOMAIN}
     service: http://localhost:3013
-    path: /${WS_PATH}-tr/*  
+    path: /trwssing/*  
   - service: http_status:404
 EOF
 }
@@ -461,7 +461,7 @@ EOF
             "sniff_override_destination":true,
             "transport":{
                 "type":"ws",
-                "path":"/${WS_PATH}-vl",
+                "path":"/vl${WS_PATH}",
                 "max_early_data":2048,
                 "early_data_header_name":"Sec-WebSocket-Protocol"
             },
@@ -481,7 +481,7 @@ EOF
             "sniff_override_destination":true,
             "transport":{
                 "type":"ws",
-                "path":"/${WS_PATH}-vm",
+                "path":"/vm${WS_PATH}",
                 "max_early_data":2048,
                 "early_data_header_name":"Sec-WebSocket-Protocol"
             },
@@ -501,7 +501,7 @@ EOF
             "sniff_override_destination":true,
             "transport":{
                 "type":"ws",
-                "path":"/${WS_PATH}-tr",
+                "path":"/tr${WS_PATH}",
                 "max_early_data":2048,
                 "early_data_header_name":"Sec-WebSocket-Protocol"
             },
@@ -567,6 +567,12 @@ EOF
             "download_detour":"direct"
         },
         "rules":[
+            {
+                "geoip": [
+                    "cn"
+                ],
+                "outbound": "block"
+            },
             {
                 "geosite":[
                     "openai"
@@ -647,7 +653,7 @@ export_list() {
   NODE_NAME=${NODE_NAME:-"$(sed -n "/type:[ ]*vless/s/.*{name:[ ]*[\"]*\([^-]*\)-.*/\1/gp" $WORK_DIR/list)"}
 
   # 生成配置文件
-  VMESS="{ \"v\": \"2\", \"ps\": \"${NODE_NAME}-Vm\", \"add\": \"${SERVER}\", \"port\": \"443\", \"id\": \"${UUID}\", \"aid\": \"0\", \"scy\": \"none\", \"net\": \"ws\", \"type\": \"none\", \"host\": \"${ARGO_DOMAIN}\", \"path\": \"/${WS_PATH}-vm\", \"tls\": \"tls\", \"sni\": \"${ARGO_DOMAIN}\", \"alpn\": \"\" }"
+  VMESS="{ \"v\": \"2\", \"ps\": \"${NODE_NAME}-Vm\", \"add\": \"${SERVER}\", \"port\": \"443\", \"id\": \"${UUID}\", \"aid\": \"0\", \"scy\": \"none\", \"net\": \"ws\", \"type\": \"none\", \"host\": \"${ARGO_DOMAIN}\", \"path\": \"/vm${WS_PATH}\", \"tls\": \"tls\", \"sni\": \"${ARGO_DOMAIN}\", \"alpn\": \"\" }"
   cat > $WORK_DIR/list << EOF
 *******************************************
 ┌────────────────┐  ┌────────────────┐
@@ -656,11 +662,11 @@ export_list() {
 │                │  │                │
 └────────────────┘  └────────────────┘
 ----------------------------
-$(info "vless://${UUID}@${SERVER}:443?encryption=none&security=tls&sni=${ARGO_DOMAIN}&type=ws&host=${ARGO_DOMAIN}&path=%2F${WS_PATH}-vl#${NODE_NAME}-Vl
+$(info "vless://${UUID}@${SERVER}:443?encryption=none&security=tls&sni=${ARGO_DOMAIN}&type=ws&host=${ARGO_DOMAIN}&path=%2Fvl${WS_PATH}#${NODE_NAME}-Vl
 
 vmess://$(base64 -w0 <<< $VMESS | sed "s/Cg==$//")
 
-trojan://${UUID}@${SERVER}:443?security=tls&sni=${ARGO_DOMAIN}&type=ws&host=${ARGO_DOMAIN}&path=%2F${WS_PATH}-tr#${NODE_NAME}-Tr")
+trojan://${UUID}@${SERVER}:443?security=tls&sni=${ARGO_DOMAIN}&type=ws&host=${ARGO_DOMAIN}&path=%2Ftr${WS_PATH}#${NODE_NAME}-Tr")
 
 *******************************************
 ┌────────────────┐
@@ -669,11 +675,11 @@ trojan://${UUID}@${SERVER}:443?security=tls&sni=${ARGO_DOMAIN}&type=ws&host=${AR
 │                │
 └────────────────┘
 ----------------------------
-$(hint "vless://${UUID}@${SERVER}:443?encryption=none&security=tls&type=ws&host=${ARGO_DOMAIN}&path=/${WS_PATH}-vl&sni=${ARGO_DOMAIN}#${NODE_NAME}-Vl
+$(hint "vless://${UUID}@${SERVER}:443?encryption=none&security=tls&type=ws&host=${ARGO_DOMAIN}&path=/vl${WS_PATH}&sni=${ARGO_DOMAIN}#${NODE_NAME}-Vl
 
-vmess://$(base64 -w0 <<< none:${UUID}@${SERVER}:443 | sed "s/Cg==$//")?remarks=${NODE_NAME}-Vm&obfsParam=${ARGO_DOMAIN}&path=/${WS_PATH}-vm&obfs=websocket&tls=1&peer=${ARGO_DOMAIN}&alterId=0
+vmess://$(base64 -w0 <<< none:${UUID}@${SERVER}:443 | sed "s/Cg==$//")?remarks=${NODE_NAME}-Vm&obfsParam=${ARGO_DOMAIN}&path=/vm${WS_PATH}&obfs=websocket&tls=1&peer=${ARGO_DOMAIN}&alterId=0
 
-trojan://${UUID}@${SERVER}:443?peer=${ARGO_DOMAIN}&plugin=obfs-local;obfs=websocket;obfs-host=${ARGO_DOMAIN};obfs-uri=/${WS_PATH}-tr#${NODE_NAME}-Tr")
+trojan://${UUID}@${SERVER}:443?peer=${ARGO_DOMAIN}&plugin=obfs-local;obfs=websocket;obfs-host=${ARGO_DOMAIN};obfs-uri=/tr${WS_PATH}#${NODE_NAME}-Tr")
 
 *******************************************
 ┌────────────────┐
@@ -682,11 +688,11 @@ trojan://${UUID}@${SERVER}:443?peer=${ARGO_DOMAIN}&plugin=obfs-local;obfs=websoc
 │                │
 └────────────────┘
 ----------------------------
-$(info "- {name: \"${NODE_NAME}-Vl\", type: vless, server: ${SERVER}, port: 443, uuid: ${UUID}, tls: true, servername: ${ARGO_DOMAIN}, skip-cert-verify: false, network: ws, ws-opts: { path: /${WS_PATH}-vl, max-early-data: 2048, early-data-header-name: Sec-WebSocket-Protocol, headers: { Host: ${ARGO_DOMAIN}}}, udp: true }
+$(info "- {name: \"${NODE_NAME}-Vl\", type: vless, server: ${SERVER}, port: 443, uuid: ${UUID}, tls: true, servername: ${ARGO_DOMAIN}, skip-cert-verify: false, network: ws, ws-opts: { path: /vl${WS_PATH}, max-early-data: 2048, early-data-header-name: Sec-WebSocket-Protocol, headers: { Host: ${ARGO_DOMAIN}}}, udp: true }
 
-- {name: \"${NODE_NAME}-Vm\", type: vmess, server: ${SERVER}, port: 443, uuid: ${UUID}, alterId: 0, cipher: none, tls: true, skip-cert-verify: true, network: ws, ws-opts: { path: /${WS_PATH}-vm, max-early-data: 2048, early-data-header-name: Sec-WebSocket-Protocol, headers: {Host: ${ARGO_DOMAIN}}}, udp: true }
+- {name: \"${NODE_NAME}-Vm\", type: vmess, server: ${SERVER}, port: 443, uuid: ${UUID}, alterId: 0, cipher: none, tls: true, skip-cert-verify: true, network: ws, ws-opts: { path: /vm${WS_PATH}, max-early-data: 2048, early-data-header-name: Sec-WebSocket-Protocol, headers: {Host: ${ARGO_DOMAIN}}}, udp: true }
 
-- {name: \"${NODE_NAME}-Tr\", type: trojan, server: ${SERVER}, port: 443, password: ${UUID}, udp: true, tls: true, sni: ${ARGO_DOMAIN}, skip-cert-verify: false, network: ws, ws-opts: { path: /${WS_PATH}-tr, max-early-data: 2048, early-data-header-name: Sec-WebSocket-Protocol, headers: { Host: ${ARGO_DOMAIN} } } }")
+- {name: \"${NODE_NAME}-Tr\", type: trojan, server: ${SERVER}, port: 443, password: ${UUID}, udp: true, tls: true, sni: ${ARGO_DOMAIN}, skip-cert-verify: false, network: ws, ws-opts: { path: /tr${WS_PATH}, max-early-data: 2048, early-data-header-name: Sec-WebSocket-Protocol, headers: { Host: ${ARGO_DOMAIN} } } }")
 
 *******************************************
 EOF
