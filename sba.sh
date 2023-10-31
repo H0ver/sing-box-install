@@ -101,8 +101,8 @@ E[41]=""
 C[41]=""
 E[42]="Please select or enter the preferred domain, the default is \${CDN_DOMAIN[0]}:"
 C[42]="请选择或者填入优选域名，默认为 \${CDN_DOMAIN[0]}:"
-E[43]="\$APP local verion: \$LOCAL.\\\t The newest verion: \$ONLINE"
-C[43]="\$APP 本地版本: \$LOCAL.\\\t 最新版本: \$ONLINE"
+E[43]="\$APP local verion: \$LOCAL \\\t The newest verion: \$ONLINE"
+C[43]="\$APP 本地版本: \$LOCAL \\\t 最新版本: \$ONLINE"
 E[44]="No upgrade required."
 C[44]="不需要升级"
 E[45]="Argo authentication message does not match the rules, neither Token nor Json, script exits. Feedback:[https://github.com/fscarmen/sba/issues]"
@@ -753,14 +753,14 @@ uninstall() {
 # Argo 与 Sing-box 的最新版本
 version() {
   # Argo 版本
-  local ARGO_ONLINE=$(wget -qO- "https://api.github.com/repos/cloudflare/cloudflared/releases/latest" | grep "tag_name" | cut -d \" -f4)
-  local ARGO_LOCAL=$($WORK_DIR/cloudflared -v | awk '{for (i=0; i<NF; i++) if ($i=="version") {print $(i+1)}}')
-  local ARGO_APP=ARGO && info "\n $(text_eval 43) "
-  [[ -n "$ARGO_ONLINE" && "$ARGO_ONLINE" != "$ARGO_LOCAL" ]] && reading "\n $(text 9) " UPDATE[0] || info " $(text 44) "
-  local SING_BOX_ONLINE=$(wget -qO- "https://api.github.com/repos/SagerNet/sing-box/releases/latest" | grep "tag_name" | sed "s@.*\"v\(.*\)\",@\1@g")
-  local SING_BOX_LOCAL=$($WORK_DIR/sing-box version | awk '/version/{print $NF}')
+  local ONLINE=$(wget -qO- "https://api.github.com/repos/cloudflare/cloudflared/releases/latest" | grep "tag_name" | cut -d \" -f4)
+  local LOCAL=$($WORK_DIR/cloudflared -v | awk '{for (i=0; i<NF; i++) if ($i=="version") {print $(i+1)}}')
+  local APP=ARGO && info "\n $(text_eval 43) "
+  [[ -n "$ONLINE" && "$ONLINE" != "$LOCAL" ]] && reading " $(text 9) " UPDATE[0] || info " $(text 44) "
+  local ONLINE=$(wget -qO- "https://api.github.com/repos/SagerNet/sing-box/releases/latest" | grep "tag_name" | sed "s@.*\"v\(.*\)\",@\1@g")
+  local LOCAL=$($WORK_DIR/sing-box version | awk '/version/{print $NF}')
   local APP=Sing-box && info "\n $(text_eval 43) "
-  [[ -n "$SING_BOX_ONLINE" && "$SING_BOX_ONLINE" != "$SING_BOX_LOCAL" ]] && reading "\n $(text 9) " UPDATE[1] || info " $(text 44) "
+  [[ -n "$ONLINE" && "$ONLINE" != "$LOCAL" ]] && reading " $(text 9) " UPDATE[1] || info " $(text 44) "
 
   [[ ${UPDATE[*]} =~ [Yy] ]] && check_system_info
   if [[ ${UPDATE[0]} = [Yy] ]]; then
@@ -770,19 +770,19 @@ version() {
       chmod +x $TEMP_DIR/cloudflared && mv $TEMP_DIR/cloudflared $WORK_DIR/cloudflared
       cmd_systemctl enable argo && [ "$(systemctl is-active argo)" = 'active' ] && info " Argo $(text 28) $(text 37)" || error " Argo $(text 28) $(text 38) "
     else
-      local APP=ARGO && error "\n $(text_eval 48) "
+      local APP=ARGO && error "\n $(text 48) "
     fi
   fi
   if [[ ${UPDATE[1]} = [Yy] ]]; then
-    wget -O $TEMP_DIR/sing-box.tar.gz ${GH_PROXY}https://github.com/SagerNet/sing-box/releases/download/v$SING_BOX_ONLINE/sing-box-$SING_BOX_ONLINE-linux-$SING_BOX_ARCH.tar.gz
+    wget -O $TEMP_DIR/sing-box.tar.gz ${GH_PROXY}https://github.com/SagerNet/sing-box/releases/download/v$ONLINE/sing-box-$ONLINE-linux-$SING_BOX_ARCH.tar.gz
     if [ -s $TEMP_DIR/sing-box.tar.gz ]; then
       cmd_systemctl disable sing-box
-      tar xzvf $TEMP_DIR/sing-box.tar.gz -C $TEMP_DIR sing-box-$SING_BOX_ONLINE-linux-$SING_BOX_ARCH/sing-box
-      mv $TEMP_DIR/sing-box-$SING_BOX_ONLINE-linux-$SING_BOX_ARCH/sing-box $WORK_DIR
-      rm -rf $TEMP_DIR/{sing-box.tar.gz,sing-box-$SING_BOX_ONLINE-linux-$SING_BOX_ARCH}
+      tar xzvf $TEMP_DIR/sing-box.tar.gz -C $TEMP_DIR sing-box-$ONLINE-linux-$SING_BOX_ARCH/sing-box
+      mv $TEMP_DIR/sing-box-$ONLINE-linux-$SING_BOX_ARCH/sing-box $WORK_DIR
+      rm -rf $TEMP_DIR/{sing-box.tar.gz,sing-box-$ONLINE-linux-$SING_BOX_ARCH}
       cmd_systemctl enable sing-box && [ "$(systemctl is-active sing-box)" = 'active' ] && info " Sing-box $(text 28) $(text 37)" || error " Sing-box  $(text 28) $(text 38) "
     else
-      local APP=Sing-box && error "\n $(text_eval 48) "
+      local APP=Sing-box && error "\n $(text 48) "
     fi
   fi
 }
