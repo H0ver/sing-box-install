@@ -455,7 +455,7 @@ EOF
         {
             "type":"vless",
             "tag":"vless-in",
-            "listen":"127.0.0.1",
+            "listen":"::",
             "listen_port":3011,
             "sniff":true,
             "sniff_override_destination":true,
@@ -475,7 +475,7 @@ EOF
         {
             "type":"vmess",
             "tag":"vmess-in",
-            "listen":"127.0.0.1",
+            "listen":"::",
             "listen_port":3012,
             "sniff":true,
             "sniff_override_destination":true,
@@ -495,7 +495,7 @@ EOF
         {
             "type":"trojan",
             "tag":"trojan-in",
-            "listen":"127.0.0.1",
+            "listen":"::",
             "listen_port":3013,
             "sniff":true,
             "sniff_override_destination":true,
